@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:57 by wivallee          #+#    #+#             */
-/*   Updated: 2024/12/11 14:29:23 by wivallee         ###   ########.fr       */
+/*   Updated: 2024/12/11 16:41:23 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,5 +14,6 @@
 # define PIPEX_H
 
 # include "ultralibft.h"
+# include <errno.h>
 
 #endif

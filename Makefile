@@ -19,7 +19,6 @@ vpath	%.c	$(PATH_SRCS_BONUS)
 
 PATH_OBJS	=	objs
 OBJS	=	$(patsubst	%.c,	$(PATH_OBJS)/%.o,	$(SRCS))
-MAIN	=	$(patsubst	%.c,	$(PATH_OBJS)/%.o,	main.c)
 
 PATH_OBJS_BONUS	=	objs_bonus
 OBJS_BONUS	=	$(patsubst	%.c,	$(PATH_OBJS_BONUS)/%.o,	$(SRCS_BONUS))
@@ -41,10 +40,7 @@ libft:
 	${MAKE}	-sC	libft
 
 $(NAME):	$(OBJS)	$(MAIN)
-	$(CC)	$(CFLAGS)	-o	$(NAME)	$(OBJS)	objs/main.o $(INCLUDE)	$(LINK)
-
-$(MAIN):
-	$(CC)	$(CFLAGS)	-c	srcs/main.c	-o	objs/main.o	$(INCLUDE)
+	$(CC)	$(CFLAGS)	-o	$(NAME)	$(OBJS)	$(INCLUDE)	$(LINK)
 
 $(OBJS):	$(PATH_OBJS)/%.o:%.c
 	mkdir	-p	$(PATH_OBJS)
