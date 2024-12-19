@@ -6,11 +6,34 @@
 /*   By: chillyd <chillyd@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2024/12/17 16:40:28 by chillyd          ###   ########.fr       */
+/*   Updated: 2024/12/19 14:49:19 by chillyd          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+extern char	**environ;
+
+char	**creating_cmd(char *cmd)
+{
+	char	**args;
+
+	args = (char **)malloc(sizeof(char *) * 3);
+	if (!args)
+		return (NULL);
+	args[0] = ft_strjoin("/bin/", ft_substr(cmd, 0, ft_strindex(cmd, ' ')));
+	if (!args[0])
+	{
+		free(args);
+		return (NULL);
+	}
+	args[1] = ft_strchr(cmd, ' ');
+	if (args[1] != NULL)
+		args[1]++;
+	//ft_printf("args[1] is %s\n", args[1]);
+	args[2] = NULL;
+	return (args);
+}
 
 int	printing_err(void)
 {
@@ -18,36 +41,36 @@ int	printing_err(void)
 	return (-1);
 }
 
-int	second_cmd(char **input, int	fd_cmd1)
+int	ft_output(char **input, int fd_cmd1, int index)
 {
 	int		fd;
-	char	*env[] = {"PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/opt/bin", NULL};
-	char	*args[] = {"/bin/sh", "-c", input[3], NULL};
-
-	if (access(input[4], W_OK) == -1)
+	char	**args;
+	
+	fd = open(input[index + 1], O_CREAT | O_WRONLY, 0644);
+	if (fd == -1)
 		return (printing_err());
-	fd = open(input[4], O_WRONLY);
+	if (dup2(fd, STDOUT_FILENO) == -1)
+		return (printing_err());
+	close(fd);
 	if (fork() == 0)
 	{
-		if (dup2(fd, STDOUT_FILENO) == -1)
-			return (printing_err());
+		args = creating_cmd(input[index]);
 		if (dup2(fd_cmd1, STDIN_FILENO) == -1)
 			return (printing_err());
-		if (execve("/bin/sh", args, env) == -1)
+		if (execve(args[0], args, environ) == -1)
 			return (printing_err());
 	}
 	wait(NULL);
 	return (0);
 }
-int	ft_pipex(char **input)
+
+int	ft_pipex(char **input, int argc)
 {
 	int		fd;
 	int		pipe_fd[2];
-	char	*env[] = {"PATH=/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/opt/bin", NULL};
-	char	*args[] = {"/bin/sh", "-c", input[2], input[1], NULL};
-	
-	if (access(input[1], R_OK) == -1)
-		return (printing_err());
+	char	**args;
+	int		i;
+
 	fd = open(input[1], O_RDONLY);
 	if (fd == -1)
 		return (printing_err());
@@ -57,22 +80,46 @@ int	ft_pipex(char **input)
 		return (printing_err());
 	}
 	close(fd);
-	if (pipe(pipe_fd) == -1) 
+	if (pipe(pipe_fd) == -1)
 		return (printing_err());
 	if (fork() == 0)
 	{
 		close(pipe_fd[0]);
-		if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) 
+		if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
 		{
 			close(pipe_fd[1]);
 			return (printing_err());
-        }
+		}
 		close(pipe_fd[1]);
-		if (execve("/bin/sh", args, env) == -1)
+		args = creating_cmd(input[2]);
+		if (execve(args[0], args, environ) == -1)
 			return (printing_err());
 	}
+	i = 3;
+	while (i < argc - 2)
+	{
+		if (fork() == 0)
+		{
+			if (dup2(pipe_fd[0], STDIN_FILENO) == -1)
+			{
+				close(pipe_fd[1]);
+				return (printing_err());
+			}
+			close(pipe_fd[0]);
+			if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
+			{
+				close(pipe_fd[1]);
+				return (printing_err());
+			}
+			close(pipe_fd[1]);
+			args = creating_cmd(input[i]);
+			if (execve(args[0], args, environ) == -1)
+				return (printing_err());
+		}
+		i++;
+	}
 	close(pipe_fd[1]);
-	if (second_cmd(input, pipe_fd[0]) == -1)
+	if (ft_output(input, pipe_fd[0], i) == -1)
 	{
 		close(pipe_fd[0]);
 		return (-1);
@@ -83,6 +130,6 @@ int	ft_pipex(char **input)
 
 int	main(int arc, char **arv)
 {
-	(void)arc;
-	return (ft_pipex(arv));
+	
+	return (ft_pipex(arv, arc));
 }
