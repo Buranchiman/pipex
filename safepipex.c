@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2024/12/20 17:48:27 by wivallee         ###   ########.fr       */
+/*   Updated: 2024/12/20 17:29:35 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,33 +93,66 @@ int	ft_pipex(char **input, int argc)
 {
 	int		input_fd;
 	int		pipe_fd[2];
+	char	**args;
 	int		i;
 
 	input_fd = open(input[1], O_RDONLY);
 	if (input_fd == -1)
 		return (printing_err());
-	i = 0;
-	while (i < argc - 4)
+	if (dup2(fd, STDIN_FILENO) == -1)
 	{
-		if (pipe(pipe_fd) == -1)
+		close(fd);
+		return (printing_err());
+	}
+	close(fd);
+	if (pipe(pipe_fd) == -1)
+		return (printing_err());
+	if (fork() == 0)
+	{
+		close(pipe_fd[0]);
+		if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
 		{
-			printing_err();
-			return (-1);
-		}
-		if (fork() == 0)
-		{
-			close(pipe_fd[0]);
-			if (execute_command(input[i + 2], input_fd, pipe_fd[1]) == -1)
-				return (-1);
+			close(pipe_fd[1]);
+			return (printing_err());
 		}
 		close(pipe_fd[1]);
-		close(input_fd);
-		input_fd = pipe_fd[0];
+		args = creating_cmd(input[2]);
+		if (execve(args[0], args, environ) == -1)
+			return (printing_err());
+	}
+	i = 3;
+	//fd = pipe_fd[0];
+	while (i < argc - 2)
+	{
+		if (fork() == 0)
+		{
+			//close(pipe_fd[0]);
+			if (execute_command(input[i], pipe_fd[0], pipe_fd[1]) == -1)
+				return (-1);
+			// if (dup2(fd, STDIN_FILENO) == -1)
+			// {
+			// 	close(pipe_fd[1]);
+			// 	return (printing_err());
+			// }
+			// close(pipe_fd[0]);
+			// if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
+			// {
+			// 	close(pipe_fd[1]);
+			// 	return (printing_err());
+			// }
+			// close(pipe_fd[1]);
+			// args = creating_cmd(input[i]);
+			// if (execve(args[0], args, environ) == -1)
+			// 	return (printing_err());
+		}
+		// close(fd);
+		// close(pipe_fd[1]);
+		//fd = pipe_fd[0];
+		// pipe(pipe_fd);
 		i++;
 	}
-	//fd = pipe_fd[0];
 	close(pipe_fd[1]);
-	if (ft_output(input, pipe_fd[0], i + 2) == -1)
+	if (ft_output(input, pipe_fd[0], i) == -1)
 	{
 		close(pipe_fd[0]);
 		return (-1);
