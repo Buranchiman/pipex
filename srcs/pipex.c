@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2024/12/20 17:48:27 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/07 11:36:08 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 extern char	**environ;
 
-int	printing_err(void)
+int	printing_err(char *msg)
 {
-	perror(strerror(errno));
+	perror(msg);
 	return (-1);
 }
 
@@ -36,7 +36,6 @@ char	**creating_cmd(char *cmd)
 	args[1] = ft_strchr(cmd, ' ');
 	if (args[1] != NULL)
 		args[1]++;
-	//ft_printf("args[1] is %s\n", args[1]);
 	args[2] = NULL;
 	return (args);
 }
@@ -48,21 +47,18 @@ int	execute_command(char *cmd, int input_fd, int output_fd)
 	args = creating_cmd(cmd);
 	if (dup2(input_fd, STDIN_FILENO) == -1)
 	{
-		printing_err();
+		printing_err("Could not dup");
 		return (-1);
 	}
 	close(input_fd);
 	if (dup2(output_fd, STDOUT_FILENO) == -1)
 	{
-		printing_err();
+		printing_err("Could not dup");
 		return (-1);
 	}
 	close(output_fd);
 	if (execve(args[0], args, environ) == -1)
-	{
-		printing_err();
-		return (-1);
-	}
+		printing_err(cmd);
 	return (0);
 }
 
@@ -73,17 +69,17 @@ int	ft_output(char **input, int fd_cmd1, int index)
 
 	fd = open(input[index + 1], O_CREAT | O_WRONLY, 0644);
 	if (fd == -1)
-		return (printing_err());
+		return (printing_err(input[index + 1]));
 	if (dup2(fd, STDOUT_FILENO) == -1)
-		return (printing_err());
+		return (printing_err("Could not dup"));
 	close(fd);
 	if (fork() == 0)
 	{
 		args = creating_cmd(input[index]);
 		if (dup2(fd_cmd1, STDIN_FILENO) == -1)
-			return (printing_err());
+			return (printing_err("Could not dup"));
 		if (execve(args[0], args, environ) == -1)
-			return (printing_err());
+			printing_err(input[index]);
 	}
 	wait(NULL);
 	return (0);
@@ -97,13 +93,13 @@ int	ft_pipex(char **input, int argc)
 
 	input_fd = open(input[1], O_RDONLY);
 	if (input_fd == -1)
-		return (printing_err());
+		printing_err(input[1]);
 	i = 0;
 	while (i < argc - 4)
 	{
 		if (pipe(pipe_fd) == -1)
 		{
-			printing_err();
+			printing_err("Could not create pipe");
 			return (-1);
 		}
 		if (fork() == 0)
@@ -117,7 +113,6 @@ int	ft_pipex(char **input, int argc)
 		input_fd = pipe_fd[0];
 		i++;
 	}
-	//fd = pipe_fd[0];
 	close(pipe_fd[1]);
 	if (ft_output(input, pipe_fd[0], i + 2) == -1)
 	{
@@ -127,9 +122,12 @@ int	ft_pipex(char **input, int argc)
 	close(pipe_fd[0]);
 	return (0);
 }
+int	first_opening(char **arv)
+{
+
+}
 
 int	main(int arc, char **arv)
 {
-
 	return (ft_pipex(arv, arc));
 }
