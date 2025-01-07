@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/07 11:36:08 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/07 14:01:58 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,10 +124,27 @@ int	ft_pipex(char **input, int argc)
 }
 int	first_opening(char **arv)
 {
+	char	*here;
+	char	*line;
+	if (ft_strncmp(arv[1], "here_doc", 8) == 0)
+	{
+		here = NULL;
+		line = get_next_line(0);
+		while (line && line != arv[2])
+		{
+			here = ft_strjoinfree(here, line);
+			free(line);
+			line = get_next_line(0);
+		}
+		free(line);
+		ft_printf(here);
+	}
+	return (0);
 
 }
 
 int	main(int arc, char **arv)
 {
+	first_opening(arv);
 	return (ft_pipex(arv, arc));
 }
