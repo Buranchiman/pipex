@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/07 14:01:58 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/07 17:36:43 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,10 @@ int	ft_output(char **input, int fd_cmd1, int index)
 	int		fd;
 	char	**args;
 
-	fd = open(input[index + 1], O_CREAT | O_WRONLY, 0644);
+	if (ft_strncmp(input[1], "here_doc", 8) == 0)
+		fd = open(input[index + 1], O_CREAT | O_WRONLY | O_APPEND, 0644);
+	else
+		fd = open(input[index + 1], O_CREAT | O_WRONLY, 0644);
 	if (fd == -1)
 		return (printing_err(input[index + 1]));
 	if (dup2(fd, STDOUT_FILENO) == -1)
@@ -85,16 +88,14 @@ int	ft_output(char **input, int fd_cmd1, int index)
 	return (0);
 }
 
-int	ft_pipex(char **input, int argc)
+int	ft_pipex(char **input, int argc, int input_fd)
 {
-	int		input_fd;
 	int		pipe_fd[2];
 	int		i;
 
-	input_fd = open(input[1], O_RDONLY);
-	if (input_fd == -1)
-		printing_err(input[1]);
 	i = 0;
+	if (ft_strncmp(input[1], "here_doc", 8) == 0)
+		i = 1;
 	while (i < argc - 4)
 	{
 		if (pipe(pipe_fd) == -1)
@@ -106,7 +107,7 @@ int	ft_pipex(char **input, int argc)
 		{
 			close(pipe_fd[0]);
 			if (execute_command(input[i + 2], input_fd, pipe_fd[1]) == -1)
-				return (-1);
+				close(pipe_fd[1]);
 		}
 		close(pipe_fd[1]);
 		close(input_fd);
@@ -122,29 +123,60 @@ int	ft_pipex(char **input, int argc)
 	close(pipe_fd[0]);
 	return (0);
 }
-int	first_opening(char **arv)
+char	*working_here_doc(char **arv)
 {
 	char	*here;
 	char	*line;
-	if (ft_strncmp(arv[1], "here_doc", 8) == 0)
+	int		i;
+	
+	here = NULL;
+	line = get_next_line(0);
+	if (!line)
+		return (NULL);
+	while (line)
 	{
-		here = NULL;
-		line = get_next_line(0);
-		while (line && line != arv[2])
-		{
-			here = ft_strjoinfree(here, line);
-			free(line);
-			line = get_next_line(0);
-		}
+		here = ft_strjoinfree(here, line);
+		if (!here)
+			break ;
+		i = 0;
 		free(line);
-		ft_printf(here);
+		line = get_next_line(0);
+		if (!line)
+		{
+			free(here);
+			return (NULL);
+		}
+		while (line[i] && arv[2][i] && arv[2][i] == line[i])
+			i++;
+		if (arv[2][i] == '\0' && line[i] == '\n')
+			break;
 	}
-	return (0);
-
+	free(line);
+	return (here);
 }
 
 int	main(int arc, char **arv)
 {
-	first_opening(arv);
-	return (ft_pipex(arv, arc));
+	char	*here_doc;
+	int		fds[2];
+	
+	if (ft_strncmp(arv[1], "here_doc", 8) == 0)
+	{
+		here_doc = working_here_doc(arv);
+		if (pipe(fds) == -1)
+		{
+			free(here_doc);
+			return (printing_err("Could not create pipe"));
+		}
+		ft_putstr_fd(here_doc, fds[1]);
+		close(fds[1]);
+		free(here_doc);
+	}
+	else
+	{
+		fds[0] = open(arv[1], O_RDONLY);
+		if (fds[0] == -1)
+			printing_err(arv[1]);
+	}
+	return (ft_pipex(arv, arc, fds[0]));
 }
