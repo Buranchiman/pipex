@@ -6,7 +6,7 @@
 /*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/07 17:36:43 by buranchiman      ###   ########.fr       */
+/*   Updated: 2025/01/08 11:18:49 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,8 +100,8 @@ int	ft_pipex(char **input, int argc, int input_fd)
 	{
 		if (pipe(pipe_fd) == -1)
 		{
-			printing_err("Could not create pipe");
-			return (-1);
+			close(input_fd);
+			return (printing_err("Could not create pipe"));
 		}
 		if (fork() == 0)
 		{
@@ -123,11 +123,22 @@ int	ft_pipex(char **input, int argc, int input_fd)
 	close(pipe_fd[0]);
 	return (0);
 }
+int	delimitercmp(char *delimiter, char *s)
+{
+	int	i;
+
+	i = 0;
+	while (delimiter[i] && s[i] && s[i] == delimiter[i])
+		i++;
+	if (delimiter[i] == '\0' && s[i] == '\n')
+		return (1);
+	return (0);
+}
+
 char	*working_here_doc(char **arv)
 {
 	char	*here;
 	char	*line;
-	int		i;
 	
 	here = NULL;
 	line = get_next_line(0);
@@ -138,7 +149,6 @@ char	*working_here_doc(char **arv)
 		here = ft_strjoinfree(here, line);
 		if (!here)
 			break ;
-		i = 0;
 		free(line);
 		line = get_next_line(0);
 		if (!line)
@@ -146,9 +156,7 @@ char	*working_here_doc(char **arv)
 			free(here);
 			return (NULL);
 		}
-		while (line[i] && arv[2][i] && arv[2][i] == line[i])
-			i++;
-		if (arv[2][i] == '\0' && line[i] == '\n')
+		if (delimitercmp(arv[2], line))
 			break;
 	}
 	free(line);

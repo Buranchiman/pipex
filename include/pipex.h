@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:57 by wivallee          #+#    #+#             */
-/*   Updated: 2024/12/13 15:45:29 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/08 11:22:47 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,5 +16,11 @@
 # include "ultralibft.h"
 # include <errno.h>
 # include <sys/wait.h>
+
+typedef struct s_fd
+{
+    int pipe_fd[2];
+    int input_fd;
+}               t_fd;
 
 #endif

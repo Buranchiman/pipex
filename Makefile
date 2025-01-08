@@ -29,7 +29,6 @@ INCLUDE	=	-Ilibft/includes	-Iinclude
 
 LINK	=	libft/libft.a
 
-CC		=	clang
 CFLAGS	=	-Wall	-Wextra	-Werror -g3
 
 ##################################RULES#######################################

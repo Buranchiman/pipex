@@ -63,7 +63,6 @@ OBJS	= $(patsubst %.c, $(PATH_OBJS)/%.o, $(SRCS))
 
 INCLUDE	= -Iincludes
 
-CC = clang
 CFLAGS = -Wall -Werror -Wextra
 AR = ar rcs
 
