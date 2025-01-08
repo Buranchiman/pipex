@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.c                                            :+:      :+:    :+:   */
+/*   safepipex.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2024/12/20 17:29:35 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/08 15:11:42 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 extern char	**environ;
 
-int	printing_err(void)
+int	perror(void)
 {
 	perror(strerror(errno));
 	return (-1);
@@ -48,19 +48,19 @@ int	execute_command(char *cmd, int input_fd, int output_fd)
 	args = creating_cmd(cmd);
 	if (dup2(input_fd, STDIN_FILENO) == -1)
 	{
-		printing_err();
+		perror();
 		return (-1);
 	}
 	close(input_fd);
 	if (dup2(output_fd, STDOUT_FILENO) == -1)
 	{
-		printing_err();
+		perror();
 		return (-1);
 	}
 	close(output_fd);
 	if (execve(args[0], args, environ) == -1)
 	{
-		printing_err();
+		perror();
 		return (-1);
 	}
 	return (0);
@@ -73,17 +73,17 @@ int	ft_output(char **input, int fd_cmd1, int index)
 
 	fd = open(input[index + 1], O_CREAT | O_WRONLY, 0644);
 	if (fd == -1)
-		return (printing_err());
+		return (perror());
 	if (dup2(fd, STDOUT_FILENO) == -1)
-		return (printing_err());
+		return (perror());
 	close(fd);
 	if (fork() == 0)
 	{
 		args = creating_cmd(input[index]);
 		if (dup2(fd_cmd1, STDIN_FILENO) == -1)
-			return (printing_err());
+			return (perror());
 		if (execve(args[0], args, environ) == -1)
-			return (printing_err());
+			return (perror());
 	}
 	wait(NULL);
 	return (0);
@@ -98,27 +98,27 @@ int	ft_pipex(char **input, int argc)
 
 	input_fd = open(input[1], O_RDONLY);
 	if (input_fd == -1)
-		return (printing_err());
+		return (perror());
 	if (dup2(fd, STDIN_FILENO) == -1)
 	{
 		close(fd);
-		return (printing_err());
+		return (perror());
 	}
 	close(fd);
 	if (pipe(pipe_fd) == -1)
-		return (printing_err());
+		return (perror());
 	if (fork() == 0)
 	{
 		close(pipe_fd[0]);
 		if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
 		{
 			close(pipe_fd[1]);
-			return (printing_err());
+			return (perror());
 		}
 		close(pipe_fd[1]);
 		args = creating_cmd(input[2]);
 		if (execve(args[0], args, environ) == -1)
-			return (printing_err());
+			return (perror());
 	}
 	i = 3;
 	//fd = pipe_fd[0];
@@ -132,18 +132,18 @@ int	ft_pipex(char **input, int argc)
 			// if (dup2(fd, STDIN_FILENO) == -1)
 			// {
 			// 	close(pipe_fd[1]);
-			// 	return (printing_err());
+			// 	return (perror());
 			// }
 			// close(pipe_fd[0]);
 			// if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
 			// {
 			// 	close(pipe_fd[1]);
-			// 	return (printing_err());
+			// 	return (perror());
 			// }
 			// close(pipe_fd[1]);
 			// args = creating_cmd(input[i]);
 			// if (execve(args[0], args, environ) == -1)
-			// 	return (printing_err());
+			// 	return (perror());
 		}
 		// close(fd);
 		// close(pipe_fd[1]);

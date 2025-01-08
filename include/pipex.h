@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/11 14:25:57 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/08 11:22:47 by buranchiman      ###   ########.fr       */
+/*   Created: 2025/01/08 14:42:57 by wivallee          #+#    #+#             */
+/*   Updated: 2025/01/08 14:49:43 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@
 
 typedef struct s_fd
 {
-    int pipe_fd[2];
-    int input_fd;
-}               t_fd;
+	int	pipe_fd[2];
+	int	input_fd;
+}				t_fd;
 
 #endif
