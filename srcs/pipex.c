@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/08 16:39:55 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/09 16:25:05 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@ int	clean_close(char *msg, t_fd tabfd)
 {
 	char	buffer[1];
 
-	perror(msg);
+	if (msg)
+		perror(msg);
 	if (read(tabfd.input_fd, buffer, 0) != -1)
 		close(tabfd.input_fd);
 	if (read(tabfd.pipe_fd[0], buffer, 0) != -1)
@@ -54,10 +55,10 @@ int	execute_command(char *cmd, t_fd tabfd)
 
 	args = creating_cmd(cmd);
 	if (dup2(tabfd.input_fd, STDIN_FILENO) == -1)
-		return (clean_close("Could not dup", tabfd));
+		return (clean_close(NULL, tabfd));
 	close(tabfd.input_fd);
 	if (dup2(tabfd.pipe_fd[1], STDOUT_FILENO) == -1)
-		return (clean_close("Could not dup", tabfd));
+		return (clean_close(NULL, tabfd));
 	close(tabfd.pipe_fd[1]);
 	if (execve(args[0], args, environ) == -1)
 		perror(cmd);
@@ -76,13 +77,13 @@ int	ft_output(char **input, t_fd tabfd, int index)
 	if (fd == -1)
 		perror(input[index + 1]);
 	if (dup2(fd, STDOUT_FILENO) == -1)
-		return (clean_close("Could not dup", tabfd));
+		return (clean_close(NULL, tabfd));
 	close(fd);
 	if (fork() == 0)
 	{
 		args = creating_cmd(input[index]);
 		if (dup2(tabfd.input_fd, STDIN_FILENO) == -1)
-			clean_close("Could not dup", tabfd);
+			clean_close(NULL, tabfd);
 		if (execve(args[0], args, environ) == -1)
 			perror(input[index]);
 	}
@@ -111,9 +112,8 @@ int	ft_pipex(char **input, int argc, t_fd tabfd)
 		tabfd.input_fd = tabfd.pipe_fd[0];
 		i++;
 	}
-	close(tabfd.pipe_fd[1]);
 	if (ft_output(input, tabfd, i + 2) == -1)
-		return (clean_close("", tabfd));
+		return (clean_close(NULL, tabfd));
 	close(tabfd.pipe_fd[0]);
 	return (0);
 }
