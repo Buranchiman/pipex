@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 14:02:08 by wivallee          #+#    #+#             */
-/*   Updated: 2024/12/11 14:10:27 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/10 14:49:01 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ char	*ft_strtrim(char const *s1, char const *set);
 int		ft_atoi(const char *nptr);
 char	*ft_itoa(int n);
 char	*ft_strjoin(char const *s1, char const *s2);
+void	ft_clear_tab(char **tab);
 char	**ft_split(char const *s, char c);
 void	ft_putchar_fd(char c, int fd);
 void	ft_putstr_fd(char *s, int fd);

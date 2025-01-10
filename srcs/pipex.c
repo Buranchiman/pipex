@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/09 16:25:05 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/10 16:07:09 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,12 @@
 
 extern char	**environ;
 
-int	clean_close(char *msg, t_fd tabfd)
+int	clean_close(char *msg, t_fd tabfd, char **args)
 {
 	char	buffer[1];
 
+	if (args)
+		ft_clear_tab(args);
 	if (msg)
 		perror(msg);
 	if (read(tabfd.input_fd, buffer, 0) != -1)
@@ -26,17 +28,20 @@ int	clean_close(char *msg, t_fd tabfd)
 		close(tabfd.pipe_fd[0]);
 	if (read(tabfd.pipe_fd[1], buffer, 0) != -1)
 		close(tabfd.pipe_fd[1]);
-	exit (1);
+	exit(EXIT_FAILURE);
 }
 
 char	**creating_cmd(char *cmd)
 {
 	char	**args;
+	char	*cmdonly;
 
 	args = (char **)malloc(sizeof(char *) * 3);
 	if (!args)
 		return (NULL);
-	args[0] = ft_strjoin("/bin/", ft_substr(cmd, 0, ft_strindex(cmd, ' ')));
+	cmdonly = ft_substr(cmd, 0, ft_strindex(cmd, ' '));
+	args[0] = ft_strjoin("/bin/", cmdonly);
+	free(cmdonly);
 	if (!args[0])
 	{
 		free(args);
@@ -53,16 +58,19 @@ int	execute_command(char *cmd, t_fd tabfd)
 {
 	char	**args;
 
+	if (tabfd.input_fd <= -1)
+		exit(EXIT_FAILURE);
 	args = creating_cmd(cmd);
 	if (dup2(tabfd.input_fd, STDIN_FILENO) == -1)
-		return (clean_close(NULL, tabfd));
+		clean_close("could not dup input", tabfd, args);
 	close(tabfd.input_fd);
 	if (dup2(tabfd.pipe_fd[1], STDOUT_FILENO) == -1)
-		return (clean_close(NULL, tabfd));
+		clean_close("could not dup output", tabfd, args);
 	close(tabfd.pipe_fd[1]);
 	if (execve(args[0], args, environ) == -1)
-		perror(cmd);
-	return (0);
+		clean_close(cmd, tabfd, args);
+	ft_clear_tab(args);
+	exit(EXIT_SUCCESS);
 }
 
 int	ft_output(char **input, t_fd tabfd, int index)
@@ -77,15 +85,17 @@ int	ft_output(char **input, t_fd tabfd, int index)
 	if (fd == -1)
 		perror(input[index + 1]);
 	if (dup2(fd, STDOUT_FILENO) == -1)
-		return (clean_close(NULL, tabfd));
+		clean_close("could not dup final output", tabfd, NULL);
 	close(fd);
 	if (fork() == 0)
 	{
 		args = creating_cmd(input[index]);
 		if (dup2(tabfd.input_fd, STDIN_FILENO) == -1)
-			clean_close(NULL, tabfd);
+			clean_close("could not dup final input", tabfd, args);
 		if (execve(args[0], args, environ) == -1)
-			perror(input[index]);
+			clean_close(input[index], tabfd, args);
+		ft_clear_tab(args);
+		exit(EXIT_SUCCESS);
 	}
 	wait(NULL);
 	return (0);
@@ -101,7 +111,7 @@ int	ft_pipex(char **input, int argc, t_fd tabfd)
 	while (i < argc - 4)
 	{
 		if (pipe(tabfd.pipe_fd) == -1)
-			return (clean_close("Could not create pipe", tabfd));
+			return (clean_close("Could not create pipe", tabfd, NULL));
 		if (fork() == 0)
 		{
 			close(tabfd.pipe_fd[0]);
@@ -113,7 +123,7 @@ int	ft_pipex(char **input, int argc, t_fd tabfd)
 		i++;
 	}
 	if (ft_output(input, tabfd, i + 2) == -1)
-		return (clean_close(NULL, tabfd));
+		return (clean_close(NULL, tabfd, NULL));
 	close(tabfd.pipe_fd[0]);
 	return (0);
 }

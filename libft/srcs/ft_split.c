@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 13:32:36 by wivallee          #+#    #+#             */
-/*   Updated: 2024/11/14 15:16:55 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/10 15:50:36 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,18 @@ static int	ft_word_len(const char *s, char c, unsigned int index)
 	return (i - index);
 }
 
-static void	ft_clear_tab(char **tab)
+void	ft_clear_tab(char **tab)
 {
 	unsigned int	i;
 
 	i = 0;
-	while (tab[i])
+	if (tab)
 	{
-		free(tab[i]);
-		i++;
+		while (tab[i])
+		{
+			free(tab[i]);
+			i++;
+		}
 	}
 	free(tab);
 }
