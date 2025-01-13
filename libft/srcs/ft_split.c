@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_split.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chillyd <chillyd@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 13:32:36 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/10 15:50:36 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/13 11:40:18 by chillyd          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ void	ft_clear_tab(char **tab)
 			free(tab[i]);
 			i++;
 		}
+		free(tab);
 	}
-	free(tab);
 }
 
 static int	ft_word_count(char const *s, char c)
