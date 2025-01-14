@@ -6,41 +6,41 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 15:06:09 by wivallee          #+#    #+#             */
-/*   Updated: 2024/11/21 14:25:14 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/14 16:46:22 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 #include <stdio.h>
 
-int	ft_type(char c, va_list lst)
+int	ft_type(int fd, char c, va_list lst)
 {
 	if (c == 'c')
 	{
-		ft_putchar_fd(va_arg(lst, int), 1);
+		ft_putchar_fd(va_arg(lst, int), fd);
 		return (1);
 	}
 	if (c == 's')
-		return (ft_putstr_fdlen(va_arg(lst, char *)));
+		return (ft_putstr_fdlen(va_arg(lst, char *), fd));
 	if (c == 'p')
-		return (ft_print_add(va_arg(lst, unsigned long)));
+		return (ft_print_add(va_arg(lst, unsigned long), fd));
 	if (c == 'd' || c == 'i')
-		return (ft_print_number(va_arg(lst, int)));
+		return (ft_print_number(va_arg(lst, int), fd));
 	if (c == 'u')
-		return (ft_putnbr_base(va_arg(lst, unsigned int), "0123456789", 1));
+		return (ft_putnbr_base(va_arg(lst, unsigned int), "0123456789", 1, fd));
 	if (c == 'x')
-		return (ft_print_hexa(va_arg(lst, unsigned int), 'x'));
+		return (ft_print_hexa(va_arg(lst, unsigned int), 'x', fd));
 	if (c == 'X')
-		return (ft_print_hexa(va_arg(lst, unsigned int), 'X'));
+		return (ft_print_hexa(va_arg(lst, unsigned int), 'X', fd));
 	if (c == '%')
 	{
-		write(1, "%", 1);
+		write(1, "%", fd);
 		return (1);
 	}
 	return (0);
 }
 
-int	ft_printf(const char *format, ...)
+int	ft_printf(int fd, const char *format, ...)
 {
 	va_list			lst;
 	int				count;
@@ -53,12 +53,12 @@ int	ft_printf(const char *format, ...)
 		i = 0;
 		if (*format == '%' && ft_strchr("cspdiuxX%%", *(format + 1)))
 		{
-			count += ft_type(*(format + 1), lst);
+			count += ft_type(fd, *(format + 1), lst);
 			format += 2;
 		}
 		while (*(format + i) && (*(format + i) != '%'))
 			i++;
-		write(1, format, i);
+		write(fd, format, i);
 		format += i;
 		count += i;
 	}

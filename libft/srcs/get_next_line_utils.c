@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/14 14:15:50 by wivallee          #+#    #+#             */
-/*   Updated: 2024/12/11 14:22:34 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/14 15:41:20 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,13 @@ int	ft_strindex(const char *s, int c)
 	return (-1);
 }
 
+static char	*malloc_error(char const **s1)
+{
+	if (*s1)
+		free((char *)*s1);
+	return (NULL);
+}
+
 char	*ft_strjoinfree(char const *s1, char const *s2)
 {
 	unsigned int	i;
@@ -47,7 +54,7 @@ char	*ft_strjoinfree(char const *s1, char const *s2)
 
 	cat = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
 	if (cat == NULL)
-		return (NULL);
+		return (malloc_error(&s1));
 	ft_bzero(cat, ft_strlen(s1) + ft_strlen(s2) + 1);
 	i = 0;
 	while (s1 && s1[i])
