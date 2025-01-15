@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 14:25:38 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/15 15:19:35 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/15 15:46:27 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ int	inputing_here_doc(char **arv)
 		{
 			free(here_doc);
 			perror("Could not create pipe");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 		ft_putstr_fd(here_doc, fds[1]);
 		close(fds[1]);
