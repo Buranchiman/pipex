@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 14:47:11 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/14 17:36:46 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/15 15:33:12 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,15 +38,15 @@ char	*find_next_path(char **path)
 	char	*temp;
 
 	i = 0;
-	//ft_printf(2, "path[i] is %c\n", *path[i]);
 	while ((*path)[i] && (*path)[i] != ':')
 		i++;
-	//ft_printf(2, "i is %d and env[i] is %s\n", i, *path[i]);
-	temp = ft_substr(*path - i, 0, i);
-	//ft_printf(2, "temps is %s\n", temp);
+	temp = ft_substr(*path, 0, i);
 	if (!temp)
 		return (NULL);
-	*path += (i + ((*path)[i] == ':' ? 1 : 0));
+	if ((*path)[i] == ':')
+		i++;
+	*path += i;
+	temp = ft_strjoinfree(temp, "/");
 	return (temp);
 }
 
@@ -63,46 +63,43 @@ char	**creating_cmd(char *cmd)
 	args[2] = NULL;
 	return (args);
 }
-int	execute_command(char *cmd, t_fd tabfd)
+
+void	execute_command(char *cmd, t_fd tabfd, char *cmdonly)
 {
 	char	**args;
 	char	*env;
-	char	*cmdonly;
 
 	args = creating_cmd(cmd);
 	if (!args)
-		clean_close("Error while allocating args\n", tabfd, NULL);
+		clean_close("Error while allocating args\n", tabfd, NULL, cmdonly);
 	env = find_env();
-	ft_printf(1, "PATH IS %s\n", env);
 	if (!env)
-		clean_close("No PATH in env\n", tabfd, args);
-	cmdonly = ft_substr(cmd, 0, ft_strindex(cmd, ' '));
-	if (!cmdonly)
-		clean_close("Malloc error in ft_substr\n", tabfd, args);
+		clean_close("No PATH in env\n", tabfd, args, cmdonly);
 	while (*env)
 	{
 		args[0] = ft_strjoinfree(find_next_path(&env), cmdonly);
-		ft_printf(2, "args[0] is %s\n", args[0]);
-		ft_printf(2, "env is %s\n", env);
 		if (!args[0])
-		{
-			free(cmdonly);
-			clean_close(NULL, tabfd, args);
-		}
+			clean_close(NULL, tabfd, args, cmdonly);
 		execve(args[0], args, environ);
+		free(args[0]);
+		args[0] = NULL;
 	}
 	ft_printf(2, "command not found : %s\n", cmdonly);
-	exit(EXIT_FAILURE);
+	clean_close(NULL, tabfd, args, cmdonly);
 }
+
 void	pipe_n_exec(char *cmd, t_fd tabfd)
 {
+	char	*cmdonly;
+
 	if (tabfd.input_fd <= -1)
 		exit(EXIT_FAILURE);
 	if (dup2(tabfd.input_fd, STDIN_FILENO) == -1)
-		clean_close("could not dup input", tabfd, NULL);
+		clean_close("could not dup input", tabfd, NULL, NULL);
 	close(tabfd.input_fd);
 	if (dup2(tabfd.pipe_fd[1], STDOUT_FILENO) == -1)
-		clean_close("could not dup output", tabfd, NULL);
+		clean_close("could not dup output", tabfd, NULL, NULL);
 	close(tabfd.pipe_fd[1]);
-	execute_command(cmd, tabfd);
+	cmdonly = ft_substr(cmd, 0, ft_strindex(cmd, ' '));
+	execute_command(cmd, tabfd, cmdonly);
 }

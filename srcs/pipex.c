@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 11:40:44 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/14 16:39:10 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/15 15:18:59 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,17 @@
 int	ft_pipex(char **input, t_fd tabfd)
 {
 	if (pipe(tabfd.pipe_fd) == -1)
-		return (clean_close("Could not create pipe", tabfd, NULL));
+		clean_close("Could not create pipe", tabfd, NULL, NULL);
 	if (fork() == 0)
 	{
 		close(tabfd.pipe_fd[0]);
 		pipe_n_exec(input[2], tabfd);
 	}
 	close(tabfd.pipe_fd[1]);
-	close(tabfd.input_fd);
+	if (tabfd.input_fd > 2)
+		close(tabfd.input_fd);
 	tabfd.input_fd = tabfd.pipe_fd[0];
-	if (ft_output(input, tabfd, 3) == -1)
-		return (clean_close(NULL, tabfd, NULL));
+	ft_output(input, tabfd, 3);
 	close(tabfd.pipe_fd[0]);
 	return (0);
 }

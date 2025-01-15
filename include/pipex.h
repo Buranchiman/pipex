@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/08 14:42:57 by wivallee          #+#    #+#             */
-/*   Updated: 2025/01/14 16:38:50 by wivallee         ###   ########.fr       */
+/*   Updated: 2025/01/15 15:22:51 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@ typedef struct s_fd
 	int	input_fd;
 }				t_fd;
 
-int		clean_close(char *msg, t_fd tabfd, char **args);
+void	clean_close(char *msg, t_fd tabfd, char **args, char *delete);
 char	*find_env(void);
 char	*find_next_path(char **path);
 char	**creating_cmd(char *cmd);
-int		execute_command(char *cmd, t_fd tabfd);
+void	execute_command(char *cmd, t_fd tabfd, char *cmdonly);
 void	pipe_n_exec(char *cmd, t_fd tabfd);
-int		ft_output(char **input, t_fd tabfd, int index);
+void	ft_output(char **input, t_fd tabfd, int index);
 
 #endif
